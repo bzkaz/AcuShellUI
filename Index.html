@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+        <title>Console</title>
+        <style type="text/css">
+            html {
+                background-color: #000;
+                }
+            body {
+                font-family: "Lucida Console";
+                font-size: 13px;
+                color: #0f0;
+                }
+            #in {
+                display: block;
+                position: fixed;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                padding: 8px;
+                border-color: #fff;
+                border-width: 1px 0 0 0;
+                background-color: #000;
+                color: #0f0;
+                }
+        </style>
+    </head>
+    <body>
+        <div id="out"></div>
+        <input id="in" tabindex="0"/>
+    </body>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript">
+            var AcuShell = AcuShell || {};
+            AcuShell.history = new Array();
+            AcuShell.historyPos = -1;
+
+            var COMMANDS = [
+                {
+                    name: "do_stuff",
+                    handler: function(args) {
+                        doStuff(args);
+                    }
+                    
+                },
+                {
+                    name: "greet",
+                    handler: function(args) {
+                        outputToConsole("Hello " + args[0] + ", welcome to Console.");
+                    }
+                }
+            ];
+
+            function processCommand() {
+                var inField = $("#in");
+                var input = inField.val();
+                var parts = input.replace(/\s+/g, " ").split(" ");
+                var command = parts[0];
+                var args = parts.length > 1 ? parts.slice(1, parts.length) : [];
+
+                AcuShell.history.push(input);
+                AcuShell.historyPos = AcuShell.history.length - 1;
+                inField.val("");
+
+                for (var i = 0; i < COMMANDS.length; i++) {
+                    if (command === COMMANDS[i].name) {
+                        COMMANDS[i].handler(args);
+                        return;
+                    }
+                }
+
+                outputToConsole("Unsupported Command: " + command);
+            }
+
+            function previousEntry() {
+                if (AcuShell.historyPos >= 0) {
+                    $("#in").val(AcuShell.history[AcuShell.historyPos + 1]);
+                    AcuShell.historyPos -= 1;
+                }
+            }
+
+            function nextEntry() {
+                if (AcuShell.historyPos < AcuShell.history.length - 1) {
+                    $("#in").val(AcuShell.history[AcuShell.historyPos + 1]);
+                    AcuShell.historyPos += 1;
+                }
+                else {
+                    $("#in").val("");
+                }
+            }
+
+            function doStuff(args) {
+                outputToConsole("I'll just echo the args: " + args);
+            }
+
+            function outputToConsole(text) {
+                var p = $("<p>" + text + "</p>")
+                $("#out").append(p);
+                p[0].scrollIntoView();
+            }
+
+            $(function() {
+                var input = $("#in");
+                $("body").css("paddingBottom", input.outerHeight());
+                input.on("keydown", function(e) {
+                    if (e.which === 13) { // [ENTER]
+                        processCommand();
+                    }
+                    if (e.which === 38) { // Arrow UP
+                        previousEntry();
+                    }
+                    if (e.which === 40) { // Arrow DOWN
+                        nextEntry();
+                    }
+                });
+            });
+    </script>
+</html>
