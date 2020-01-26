@@ -56,12 +56,15 @@
             function processCommand() {
                 var inField = $("#in");
                 var input = inField.val();
+                if (input.replace(' ', '') === '') {
+                    return;
+                }
                 var parts = input.replace(/\s+/g, " ").split(" ");
                 var command = parts[0];
                 var args = parts.length > 1 ? parts.slice(1, parts.length) : [];
 
                 AcuShell.history.push(input);
-                AcuShell.historyPos = AcuShell.history.length - 1;
+                AcuShell.historyPos = AcuShell.history.length;
                 inField.val("");
 
                 for (var i = 0; i < COMMANDS.length; i++) {
@@ -75,20 +78,18 @@
             }
 
             function previousEntry() {
-                if (AcuShell.historyPos >= 0) {
+                if (AcuShell.historyPos > 0) {
                     $("#in").val("");
+                    AcuShell.historyPos -= 1;
                     $("#in").val(AcuShell.history[AcuShell.historyPos]);
-                    if (AcuShell.historyPos > 0) { 
-                        AcuShell.historyPos -= 1;
-                    }
                 }
             }
 
             function nextEntry() {
                 if (AcuShell.historyPos < AcuShell.history.length - 1) {
                     $("#in").val("");
-                    $("#in").val(AcuShell.history[AcuShell.historyPos + 1]);
                     AcuShell.historyPos += 1;
+                    $("#in").val(AcuShell.history[AcuShell.historyPos]);
                 }
                 else {
                     $("#in").val("");
@@ -117,6 +118,7 @@
                         previousEntry();
                     }
                     if (e.which === 40) { // Arrow DOWN
+                        e.preventDefault();
                         nextEntry();
                     }
                 });
